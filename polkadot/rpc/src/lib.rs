@@ -41,6 +41,31 @@ use sp_keystore::KeystorePtr;
 /// A type representing all RPC extensions.
 pub type RpcExtension = RpcModule<()>;
 
+/// Unique
+use core::marker::PhantomData;
+use fc_mapping_sync::{EthereumBlockNotification, EthereumBlockNotificationSinks};
+use fc_rpc::{
+	frontier_backend_client::SystemAccountId32StorageOverride, EthBlockDataCacheTask, EthConfig,
+	OverrideHandle,
+};
+use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
+use fp_rpc::NoTransactionConverter;
+use sc_client_api::{BlockchainEvents, StorageProvider, UsageProvider};
+use sc_network::NetworkService;
+use sc_network_sync::SyncingService;
+use sc_transaction_pool::{ChainApi, Pool};
+use sp_inherents::CreateInherentDataProviders;
+
+pub mod ethereum;
+use ethereum::*;
+pub mod service;
+use service::*;
+
+/// A type representing all RPC extensions.
+pub(crate) type FullBackend = sc_service::TFullBackend<Block>;
+
+
+
 /// Extra dependencies for BABE.
 pub struct BabeDeps {
 	/// A handle to the BABE worker for issuing requests.
@@ -74,7 +99,7 @@ pub struct BeefyDeps<AuthorityId: AuthorityIdBound> {
 }
 
 /// Full client dependencies
-pub struct FullDeps<C, P, SC, B, AuthorityId: AuthorityIdBound> {
+pub struct FullDeps<C, P, SC, B, CA: ChainApi, CIDP, AuthorityId: AuthorityIdBound> {
 	/// The client instance to use.
 	pub client: Arc<C>,
 	/// Transaction pool instance.
@@ -91,13 +116,27 @@ pub struct FullDeps<C, P, SC, B, AuthorityId: AuthorityIdBound> {
 	pub grandpa: GrandpaDeps<B>,
 	/// BEEFY specific dependencies.
 	pub beefy: BeefyDeps<AuthorityId>,
+	/// Eth specific dependencies.
+	pub eth: EthDeps<C, P, CA, CIDP>,
 	/// Backend used by the node.
 	pub backend: Arc<B>,
 }
 
 /// Instantiate all RPC extensions.
-pub fn create_full<C, P, SC, B, AuthorityId>(
-	FullDeps { client, pool, select_chain, chain_spec, deny_unsafe, babe, grandpa, beefy, backend } : FullDeps<C, P, SC, B, AuthorityId>,
+pub fn create_full<C, P, SC, B, CA: ChainApi, CIDP, AuthorityId>(
+	FullDeps {
+		client,
+		pool,
+		select_chain,
+		chain_spec,
+		deny_unsafe,
+		babe,
+		grandpa,
+		beefy,
+		eth,
+		backend,
+	}: FullDeps<C, P, SC, B, CA, CIDP, AuthorityId>,
+	subscription_task_executor: SubscriptionTaskExecutor,
 ) -> Result<RpcExtension, Box<dyn std::error::Error + Send + Sync>>
 where
 	C: ProvideRuntimeApi<Block>
@@ -106,13 +145,23 @@ where
 		+ HeaderMetadata<Block, Error = BlockChainError>
 		+ Send
 		+ Sync
+		+ StorageProvider<Block, B>
 		+ 'static,
+	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
+	C: Send + Sync + 'static,
+	C: BlockchainEvents<Block>,
+	C: UsageProvider<Block>,
+	C::Api: RuntimeApiDep,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: mmr_rpc::MmrRuntimeApi<Block, <Block as sp_runtime::traits::Block>::Hash, BlockNumber>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: BabeApi<Block>,
 	C::Api: BlockBuilder<Block>,
-	P: TransactionPool + Sync + Send + 'static,
+	CA: ChainApi<Block = Block> + 'static,
+	B: sc_client_api::Backend<Block> + Send + Sync + 'static,
+	C: sp_api::CallApiAt<Block>,
+	CIDP: CreateInherentDataProviders<Block, ()> + Send + 'static,
+	P: TransactionPool<Block = Block> + Sync + Send + 'static,
 	SC: SelectChain<Block> + 'static,
 	B: sc_client_api::Backend<Block> + Send + Sync + 'static,
 	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashingFor<Block>>,
@@ -182,6 +231,8 @@ where
 		)?
 		.into_rpc(),
 	)?;
+
+	create_eth::<_, _, _, _, _, DefaultEthConfig<B, C>>(&mut io, eth, subscription_task_executor)?;
 
 	Ok(io)
 }

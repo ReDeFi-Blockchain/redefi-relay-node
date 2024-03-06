@@ -18,8 +18,20 @@
 
 #![deny(unused_results)]
 
+macro_rules! clone {
+    ($($i:ident),* $(,)?) => {
+		$(
+			let $i = $i.clone();
+		)*
+    };
+}
+
 pub mod benchmarking;
 pub mod chain_spec;
+
+mod eth_service;
+use eth_service::*;
+
 mod fake_runtime_api;
 mod grandpa_support;
 mod parachains_db;
@@ -41,6 +53,18 @@ mod tests;
 
 #[cfg(feature = "full-node")]
 use {
+	beefy::BeefyRPCLinks,
+	fc_mapping_sync::{
+		kv::MappingSyncWorker, EthereumBlockNotification, EthereumBlockNotificationSinks,
+		SyncStrategy,
+	},
+	fc_rpc::{
+		EthBlockDataCacheTask, EthTask, OverrideHandle, RuntimeApiStorageOverride,
+		SchemaV1Override, SchemaV2Override, SchemaV3Override, StorageOverride,
+	},
+	fc_rpc_core::types::{FeeHistoryCache, FilterPool},
+	fp_rpc::EthereumRuntimeRPCApi,
+	fp_storage::EthereumStorageSchema,
 	gum::info,
 	polkadot_node_core_approval_voting::{
 		self as approval_voting_subsystem, Config as ApprovalVotingConfig,
@@ -56,9 +80,10 @@ use {
 		peer_set::{PeerSet, PeerSetProtocolNames},
 		request_response::ReqProtocolNames,
 	},
-	sc_client_api::BlockBackend,
+	sc_client_api::{BlockBackend, BlockOf},
 	sc_consensus_grandpa::{self, FinalityProofProvider as GrandpaFinalityProofProvider},
 	sc_transaction_pool_api::OffchainTransactionPoolFactory,
+	sp_block_builder::BlockBuilder,
 	sp_core::traits::SpawnNamed,
 };
 
@@ -78,7 +103,12 @@ pub use {
 #[cfg(feature = "full-node")]
 use polkadot_node_subsystem::jaeger;
 
-use std::{collections::HashMap, path::PathBuf, sync::Arc, time::Duration};
+use std::{
+	collections::{BTreeMap, HashMap},
+	path::PathBuf,
+	sync::{Arc, Mutex},
+	time::Duration,
+};
 
 use prometheus_endpoint::Registry;
 #[cfg(feature = "full-node")]
@@ -93,7 +123,7 @@ use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use mmr_gadget::MmrGadget;
 use polkadot_node_subsystem_types::DefaultSubsystemClient;
 pub use polkadot_primitives::{Block, BlockId, BlockNumber, CollatorPair, Hash, Id as ParaId};
-pub use sc_client_api::{Backend, CallExecutor};
+pub use sc_client_api::{Backend, BlockchainEvents, CallExecutor, StorageProvider};
 pub use sc_consensus::{BlockImport, LongestChain};
 pub use sc_executor::NativeExecutionDispatch;
 use sc_executor::{HeapAllocStrategy, WasmExecutor, DEFAULT_HEAP_ALLOC_STRATEGY};
@@ -485,10 +515,6 @@ fn new_partial<ChainSelection>(
 		sc_consensus::DefaultImportQueue<Block>,
 		sc_transaction_pool::FullPool<Block, FullClient>,
 		(
-			impl Fn(
-				polkadot_rpc::DenyUnsafe,
-				polkadot_rpc::SubscriptionTaskExecutor,
-			) -> Result<polkadot_rpc::RpcExtension, SubstrateServiceError>,
 			(
 				sc_consensus_babe::BabeBlockImport<
 					Block,
@@ -501,6 +527,8 @@ fn new_partial<ChainSelection>(
 				sc_consensus_grandpa::LinkHalf<Block, FullClient, ChainSelection>,
 				sc_consensus_babe::BabeLink<Block>,
 				sc_consensus_beefy::BeefyVoterLinks<Block, ecdsa_crypto::AuthorityId>,
+				polkadot_rpc::BabeDeps,
+				BeefyRPCLinks<Block>,
 			),
 			sc_consensus_grandpa::SharedVoterState,
 			sp_consensus_babe::SlotDuration,
@@ -581,49 +609,15 @@ where
 		backend.clone(),
 		Some(shared_authority_set.clone()),
 	);
-
-	let import_setup = (block_import, grandpa_link, babe_link, beefy_voter_links);
 	let rpc_setup = shared_voter_state.clone();
 
-	let rpc_extensions_builder = {
-		let client = client.clone();
-		let keystore = keystore_container.keystore();
-		let transaction_pool = transaction_pool.clone();
-		let select_chain = select_chain.clone();
-		let chain_spec = config.chain_spec.cloned_box();
-		let backend = backend.clone();
-
-		move |deny_unsafe,
-		      subscription_executor: polkadot_rpc::SubscriptionTaskExecutor|
-		      -> Result<polkadot_rpc::RpcExtension, sc_service::Error> {
-			let deps = polkadot_rpc::FullDeps {
-				client: client.clone(),
-				pool: transaction_pool.clone(),
-				select_chain: select_chain.clone(),
-				chain_spec: chain_spec.cloned_box(),
-				deny_unsafe,
-				babe: polkadot_rpc::BabeDeps {
-					babe_worker_handle: babe_worker_handle.clone(),
-					keystore: keystore.clone(),
-				},
-				grandpa: polkadot_rpc::GrandpaDeps {
-					shared_voter_state: shared_voter_state.clone(),
-					shared_authority_set: shared_authority_set.clone(),
-					justification_stream: justification_stream.clone(),
-					subscription_executor: subscription_executor.clone(),
-					finality_provider: finality_proof_provider.clone(),
-				},
-				beefy: polkadot_rpc::BeefyDeps::<ecdsa_crypto::AuthorityId> {
-					beefy_finality_proof_stream: beefy_rpc_links.from_voter_justif_stream.clone(),
-					beefy_best_block_stream: beefy_rpc_links.from_voter_best_beefy_stream.clone(),
-					subscription_executor,
-				},
-				backend: backend.clone(),
-			};
-
-			polkadot_rpc::create_full(deps).map_err(Into::into)
-		}
+	let babe_deps = polkadot_rpc::BabeDeps {
+		babe_worker_handle: babe_worker_handle.clone(),
+		keystore: keystore_container.keystore(),
 	};
+
+	let import_setup =
+		(block_import, grandpa_link, babe_link, beefy_voter_links, babe_deps, beefy_rpc_links);
 
 	Ok(sc_service::PartialComponents {
 		client,
@@ -633,7 +627,7 @@ where
 		select_chain,
 		import_queue,
 		transaction_pool,
-		other: (rpc_extensions_builder, import_setup, rpc_setup, slot_duration, telemetry),
+		other: (import_setup, rpc_setup, slot_duration, telemetry),
 	})
 }
 
@@ -828,8 +822,11 @@ pub fn new_full<
 		select_chain,
 		import_queue,
 		transaction_pool,
-		other: (rpc_extensions_builder, import_setup, rpc_setup, slot_duration, mut telemetry),
+		other: (import_setup, rpc_setup, slot_duration, mut telemetry),
 	} = new_partial::<SelectRelayChain<_>>(&mut config, basics, select_chain)?;
+
+	let (block_import, link_half, babe_link, beefy_links, babe_deps, beefy_rpc_links) =
+		import_setup;
 
 	let metrics = Network::register_notification_metrics(
 		config.prometheus_config.as_ref().map(|cfg| &cfg.registry),
@@ -941,7 +938,7 @@ pub fn new_full<
 
 	let warp_sync = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
 		backend.clone(),
-		import_setup.1.shared_authority_set().clone(),
+		link_half.shared_authority_set().clone(),
 		grandpa_hard_forks,
 	));
 
@@ -1063,6 +1060,121 @@ pub fn new_full<
 		);
 	}
 
+	let rpc_extensions_builder = {
+		clone!(
+			backend,
+			transaction_pool,
+			client,
+			select_chain,
+			network,
+			sync_service,
+			prometheus_registry,
+		);
+
+		let validator = config.role.is_authority();
+		let keystore = keystore_container.keystore();
+		let chain_spec = config.chain_spec.cloned_box();
+		let shared_authority_set = link_half.shared_authority_set().clone();
+		let justification_stream = link_half.justification_stream();
+		let finality_proof_provider = GrandpaFinalityProofProvider::new_for_service(
+			backend.clone(),
+			Some(shared_authority_set.clone()),
+		);
+		let babe_worker_handle = babe_deps.babe_worker_handle.clone();
+		let shared_voter_state = shared_voter_state.clone();
+
+		let eth_filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
+		let eth_backend = polkadot_rpc::service::open_frontier_backend(client.clone(), &config)
+			.map_err(|msg| SubstrateServiceError::Other(msg))?;
+		let fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
+		let eth_pubsub_notification_sinks: Arc<
+			EthereumBlockNotificationSinks<EthereumBlockNotification<Block>>,
+		> = Default::default();
+		let fee_history_limit = 2048;
+		let overrides: Arc<OverrideHandle<Block>> = overrides_handle(client.clone());
+		let eth_block_data_cache = spawn_frontier_tasks(
+			FrontierTaskParams {
+				client: client.clone(),
+				substrate_backend: backend.clone(),
+				eth_filter_pool: eth_filter_pool.clone(),
+				eth_backend: eth_backend.clone(),
+				fee_history_limit,
+				fee_history_cache: fee_history_cache.clone(),
+				task_manager: &task_manager,
+				prometheus_registry,
+				overrides: overrides.clone(),
+				sync_strategy: SyncStrategy::Normal,
+			},
+			sync_service.clone(),
+			eth_pubsub_notification_sinks.clone(),
+		);
+		move |deny_unsafe,
+		      subscription_executor: polkadot_rpc::SubscriptionTaskExecutor|
+		      -> Result<polkadot_rpc::RpcExtension, sc_service::Error> {
+			clone!(
+				backend,
+				transaction_pool,
+				client,
+				select_chain,
+				eth_backend,
+				eth_filter_pool,
+				network,
+				sync_service,
+				fee_history_cache,
+				validator,
+				eth_pubsub_notification_sinks,
+				eth_block_data_cache,
+				overrides,
+			);
+			let deps = polkadot_rpc::FullDeps {
+				client: client.clone(),
+				pool: transaction_pool.clone(),
+				select_chain: select_chain.clone(),
+				chain_spec: chain_spec.cloned_box(),
+				deny_unsafe,
+				babe: polkadot_rpc::BabeDeps {
+					babe_worker_handle: babe_worker_handle.clone(),
+					keystore: keystore.clone(),
+				},
+				grandpa: polkadot_rpc::GrandpaDeps {
+					shared_voter_state: shared_voter_state.clone(),
+					shared_authority_set: shared_authority_set.clone(),
+					justification_stream: justification_stream.clone(),
+					subscription_executor: subscription_executor.clone(),
+					finality_provider: finality_proof_provider.clone(),
+				},
+				beefy: polkadot_rpc::BeefyDeps::<ecdsa_crypto::AuthorityId> {
+					beefy_finality_proof_stream: beefy_rpc_links.from_voter_justif_stream.clone(),
+					beefy_best_block_stream: beefy_rpc_links.from_voter_best_beefy_stream.clone(),
+					subscription_executor: subscription_executor.clone(),
+				},
+				eth: polkadot_rpc::ethereum::EthDeps {
+					client,
+					pool: transaction_pool.clone(),
+					graph: transaction_pool.pool().clone(),
+					sync: sync_service,
+					is_authority: validator,
+					network,
+					eth_backend,
+					// TODO: Unhardcode
+					max_past_logs: 10000,
+					fee_history_limit,
+					fee_history_cache,
+					eth_block_data_cache,
+					eth_filter_pool,
+					eth_pubsub_notification_sinks,
+					// TODO: Unhardcode
+					enable_dev_signer: false,
+					overrides,
+					pending_create_inherent_data_providers: |_, ()| async move { Ok(()) },
+				},
+				backend: backend.clone(),
+			};
+
+			polkadot_rpc::create_full(deps, subscription_executor).map_err(Into::into)
+		}
+	};
+
 	let rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
 		config,
 		backend: backend.clone(),
@@ -1100,8 +1212,6 @@ pub fn new_full<
 			);
 		}
 	}
-
-	let (block_import, link_half, babe_link, beefy_links) = import_setup;
 
 	let overseer_client = client.clone();
 	let spawner = task_manager.spawn_handle();

@@ -117,6 +117,7 @@ pub use pallet_balances::Call as BalancesCall;
 use rococo_runtime_constants::{currency::*, fee::*, time::*};
 
 // Weights used in the runtime.
+mod ethereum;
 mod weights;
 
 // XCM configurations.
@@ -1500,6 +1501,10 @@ construct_runtime! {
 		// refer to block<N>. See issue polkadot-fellows/runtimes#160 for details.
 		Mmr: pallet_mmr = 241,
 		MmrLeaf: pallet_beefy_mmr = 242,
+
+		// EVM
+		EVM: pallet_evm = 102,
+		Ethereum: pallet_ethereum = 103,
 
 		// Pallet for migrating Identity to a parachain. To be removed post-migration.
 		IdentityMigrator: identity_migrator = 248,

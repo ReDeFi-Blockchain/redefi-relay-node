@@ -112,6 +112,15 @@ xcm-executor.workspace = true
 xcm-builder.workspace = true
 xcm-runtime-apis.workspace = true
 
+# Frontier
+pallet-ethereum = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+pallet-evm = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+fp-evm = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+fp-rpc = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+fp-self-contained = { default-features = false, features = [
+	"serde",
+], git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+
 [dev-dependencies]
 hex-literal = { workspace = true, default-features = true }
 tiny-keccak = { features = ["keccak"], workspace = true }
@@ -226,6 +235,8 @@ std = [
 	"xcm-executor/std",
 	"xcm-runtime-apis/std",
 	"xcm/std",
+	"pallet-evm/std",
+	"pallet-ethereum/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -282,6 +293,7 @@ runtime-benchmarks = [
 	"sp-staking/runtime-benchmarks",
 	"xcm-builder/runtime-benchmarks",
 	"xcm-executor/runtime-benchmarks",
+	"pallet-ethereum/runtime-benchmarks",
 	"xcm-runtime-apis/runtime-benchmarks",
 ]
 try-runtime = [
@@ -336,6 +348,8 @@ try-runtime = [
 	"polkadot-runtime-common/try-runtime",
 	"polkadot-runtime-parachains/try-runtime",
 	"sp-runtime/try-runtime",
+	"pallet-ethereum/try-runtime",
+	"pallet-evm/try-runtime",
 ]
 
 # Enable the metadata hash generation in the wasm builder.

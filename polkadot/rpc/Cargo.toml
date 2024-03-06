@@ -65,3 +65,23 @@ sp-block-builder.workspace = true
 sp-block-builder.default-features = true
 substrate-state-trie-migration-rpc.workspace = true
 substrate-state-trie-migration-rpc.default-features = true
+
+sp-session = { workspace = true, default-features = false }
+sc-service = { workspace = true }
+sp-offchain = { workspace = true, default-features = false }
+sp-inherents = { workspace = true }
+sp-transaction-pool = { workspace = true }
+sc-transaction-pool = { workspace = true }
+sc-network = {workspace = true }
+sc-network-sync = { workspace = true }
+pallet-transaction-payment-rpc-runtime-api = { workspace = true, default-features = false }
+
+# Ethereum (Frontier)
+fc-api = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+fc-consensus = { git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+fc-db = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+fc-mapping-sync = { git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+fc-rpc = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+fc-rpc-core = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+fp-storage = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+fp-rpc = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }

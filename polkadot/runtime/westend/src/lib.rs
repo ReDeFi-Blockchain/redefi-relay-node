@@ -130,6 +130,7 @@ use westend_runtime_constants::{
 };
 
 mod bag_thresholds;
+pub mod ethereum;
 mod weights;
 pub mod xcm_config;
 
@@ -1613,8 +1614,14 @@ mod runtime {
 	#[runtime::pallet_index(101)]
 	pub type AssetRate = pallet_asset_rate;
 
-	// Root testing pallet.
+	// EVM
 	#[runtime::pallet_index(102)]
+	pub type EVM = pallet_evm;
+	#[runtime::pallet_index(103)]
+	pub type Ethereum = pallet_ethereum;
+	
+	// Root testing pallet.
+	#[runtime::pallet_index(104)]
 	pub type RootTesting = pallet_root_testing;
 
 	// BEEFY Bridges support.
