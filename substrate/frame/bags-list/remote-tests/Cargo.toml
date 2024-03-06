@@ -1,0 +1,31 @@
+[package]
+name = "pallet-bags-list-remote-tests"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+license = "Apache-2.0"
+homepage = "https://substrate.io"
+repository.workspace = true
+description = "FRAME pallet bags list remote test"
+publish = false
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+pallet-staking = { version = "25.0.0", path = "../../staking" }
+pallet-bags-list = { path = "..", features = ["fuzz"], version = "24.0.0" }
+frame-election-provider-support = { version = "25.0.0", path = "../../election-provider-support" }
+frame-system = { version = "25.0.0", path = "../../system" }
+frame-support = { version = "25.0.0", path = "../../support" }
+sp-storage = { version = "17.0.0", path = "../../../primitives/storage" }
+sp-core = { version = "25.0.0", path = "../../../primitives/core" }
+sp-tracing = { version = "14.0.0", path = "../../../primitives/tracing" }
+sp-runtime = { version = "28.0.0", path = "../../../primitives/runtime" }
+sp-std = { version = "12.0.0", path = "../../../primitives/std" }
+
+# utils
+remote-externalities = { package = "frame-remote-externalities", path = "../../../utils/frame/remote-externalities", version = "0.32.0" }
+
+# others
+log = "0.4.17"

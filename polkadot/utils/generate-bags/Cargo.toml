@@ -1,0 +1,13 @@
+[package]
+name = "polkadot-voter-bags"
+version = "4.0.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "polkadot-voter-bags"
+
+[dependencies]
+clap = { version = "4.4.6", features = ["derive"] }
+generate-bags = { version = "25.0.0", path = "../../../substrate/utils/frame/generate-bags" }
+sp-io = { version = "27.0.0", path = "../../../substrate/primitives/io" }
+westend-runtime = { version = "4.0.0", path = "../../runtime/westend" }

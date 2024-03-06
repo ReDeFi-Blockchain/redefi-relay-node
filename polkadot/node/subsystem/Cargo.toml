@@ -1,0 +1,12 @@
+[package]
+name = "polkadot-node-subsystem"
+description = "Subsystem traits and message definitions and the generated overseer"
+version = "4.0.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+polkadot-overseer = { version = "4.0.0", path = "../overseer" }
+polkadot-node-subsystem-types = { version = "4.0.0", path = "../subsystem-types" }
+polkadot-node-jaeger = { version = "4.0.0", path = "../jaeger" }

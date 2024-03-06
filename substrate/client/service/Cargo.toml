@@ -1,0 +1,88 @@
+[package]
+name = "sc-service"
+version = "0.32.0"
+authors.workspace = true
+edition.workspace = true
+license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+homepage = "https://substrate.io"
+repository.workspace = true
+description = "Substrate service. Starts a thread that spins up the network, client, and extrinsic pool. Manages communication between them."
+readme = "README.md"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[features]
+default = [ "rocksdb" ]
+# The RocksDB feature activates the RocksDB database backend. If it is not activated, and you pass
+# a path to a database, an error will be produced at runtime.
+rocksdb = [ "sc-client-db/rocksdb" ]
+# exposes the client type
+test-helpers = []
+runtime-benchmarks = [
+	"sc-client-db/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
+]
+
+[dependencies]
+jsonrpsee = { version = "0.16.2", features = ["server"] }
+thiserror = "1.0.48"
+futures = "0.3.21"
+rand = "0.8.5"
+parking_lot = "0.12.1"
+log = "0.4.17"
+futures-timer = "3.0.1"
+exit-future = "0.2.0"
+pin-project = "1.0.12"
+serde = "1.0.188"
+serde_json = "1.0.107"
+sc-keystore = { version = "22.0.0", path = "../keystore" }
+sp-runtime = { version = "28.0.0", path = "../../primitives/runtime" }
+sp-trie = { version = "26.0.0", path = "../../primitives/trie" }
+sp-externalities = { version = "0.23.0", path = "../../primitives/externalities" }
+sc-utils = { version = "11.0.0", path = "../utils" }
+sp-version = { version = "26.0.0", path = "../../primitives/version" }
+sp-blockchain = { version = "25.0.0", path = "../../primitives/blockchain" }
+sp-core = { version = "25.0.0", path = "../../primitives/core" }
+sp-keystore = { version = "0.31.0", path = "../../primitives/keystore" }
+sp-session = { version = "24.0.0", path = "../../primitives/session" }
+sp-state-machine = { version = "0.32.0", path = "../../primitives/state-machine" }
+sp-consensus = { version = "0.29.0", path = "../../primitives/consensus/common" }
+sc-consensus = { version = "0.30.0", path = "../consensus/common" }
+sp-storage = { version = "17.0.0", path = "../../primitives/storage" }
+sc-network = { version = "0.31.0", path = "../network" }
+sc-network-bitswap = { version = "0.30.0", path = "../network/bitswap" }
+sc-network-common = { version = "0.30.0", path = "../network/common" }
+sc-network-light = { version = "0.30.0", path = "../network/light" }
+sc-network-sync = { version = "0.30.0", path = "../network/sync" }
+sc-network-transactions = { version = "0.30.0", path = "../network/transactions" }
+sc-chain-spec = { version = "24.0.0", path = "../chain-spec" }
+sc-client-api = { version = "25.0.0", path = "../api" }
+sp-api = { version = "23.0.0", path = "../../primitives/api" }
+sc-client-db = { path = "../db", default-features = false, version = "0.32.0" }
+codec = { package = "parity-scale-codec", version = "3.6.1" }
+sc-executor = { version = "0.29.0", path = "../executor" }
+sc-transaction-pool = { version = "25.0.0", path = "../transaction-pool" }
+sp-transaction-pool = { version = "23.0.0", path = "../../primitives/transaction-pool" }
+sc-transaction-pool-api = { version = "25.0.0", path = "../transaction-pool/api" }
+sp-transaction-storage-proof = { version = "23.0.0", path = "../../primitives/transaction-storage-proof" }
+sc-rpc-server = { version = "10.0.0", path = "../rpc-servers" }
+sc-rpc = { version = "26.0.0", path = "../rpc" }
+sc-rpc-spec-v2 = { version = "0.31.0", path = "../rpc-spec-v2" }
+sc-block-builder = { version = "0.30.0", path = "../block-builder" }
+sc-informant = { version = "0.30.0", path = "../informant" }
+sc-telemetry = { version = "12.0.0", path = "../telemetry" }
+prometheus-endpoint = { package = "substrate-prometheus-endpoint", path = "../../utils/prometheus", version = "0.16.0" }
+sc-tracing = { version = "25.0.0", path = "../tracing" }
+sc-sysinfo = { version = "24.0.0", path = "../sysinfo" }
+tracing = "0.1.29"
+tracing-futures = { version = "0.2.4" }
+async-trait = "0.1.57"
+tokio = { version = "1.22.0", features = ["time", "rt-multi-thread", "parking_lot"] }
+tempfile = "3.1.0"
+directories = "5.0.1"
+static_init = "1.0.3"
+
+[dev-dependencies]
+substrate-test-runtime-client = { path = "../../test-utils/runtime/client" }
+substrate-test-runtime = { path = "../../test-utils/runtime" }

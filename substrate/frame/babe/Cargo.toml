@@ -1,0 +1,78 @@
+[package]
+name = "pallet-babe"
+version = "25.0.0"
+authors.workspace = true
+edition.workspace = true
+license = "Apache-2.0"
+homepage = "https://substrate.io"
+repository.workspace = true
+description = "Consensus extension module for BABE consensus. Collects on-chain randomness from VRF outputs and manages epoch transitions."
+readme = "README.md"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = ["derive"] }
+log = { version = "0.4.17", default-features = false }
+scale-info = { version = "2.10.0", default-features = false, features = ["derive", "serde"] }
+frame-benchmarking = { path = "../benchmarking", default-features = false, optional = true, version = "25.0.0" }
+frame-support = { path = "../support", default-features = false, version = "25.0.0" }
+frame-system = { path = "../system", default-features = false, version = "25.0.0" }
+pallet-authorship = { path = "../authorship", default-features = false, version = "25.0.0" }
+pallet-session = { path = "../session", default-features = false, version = "25.0.0" }
+pallet-timestamp = { path = "../timestamp", default-features = false, version = "24.0.0" }
+sp-application-crypto = { path = "../../primitives/application-crypto", default-features = false, features = ["serde"], version = "27.0.0" }
+sp-consensus-babe = { path = "../../primitives/consensus/babe", default-features = false, features = ["serde"], version = "0.29.0" }
+sp-core = { path = "../../primitives/core", default-features = false, features = ["serde"], version = "25.0.0" }
+sp-io = { path = "../../primitives/io", default-features = false, version = "27.0.0" }
+sp-runtime = { path = "../../primitives/runtime", default-features = false, features = ["serde"], version = "28.0.0" }
+sp-session = { path = "../../primitives/session", default-features = false, version = "24.0.0" }
+sp-staking = { path = "../../primitives/staking", default-features = false, features = ["serde"], version = "23.0.0" }
+sp-std = { path = "../../primitives/std", default-features = false, version = "12.0.0" }
+
+[dev-dependencies]
+frame-election-provider-support = { path = "../election-provider-support" }
+pallet-balances = { path = "../balances" }
+pallet-offences = { path = "../offences" }
+pallet-staking = { path = "../staking" }
+pallet-staking-reward-curve = { path = "../staking/reward-curve" }
+sp-core = { path = "../../primitives/core" }
+
+[features]
+default = [ "std" ]
+std = [
+	"codec/std",
+	"frame-benchmarking?/std",
+	"frame-support/std",
+	"frame-system/std",
+	"log/std",
+	"pallet-authorship/std",
+	"pallet-session/std",
+	"pallet-timestamp/std",
+	"scale-info/std",
+	"sp-application-crypto/std",
+	"sp-consensus-babe/std",
+	"sp-core/std",
+	"sp-io/std",
+	"sp-runtime/std",
+	"sp-session/std",
+	"sp-staking/std",
+	"sp-std/std",
+]
+runtime-benchmarks = [
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+	"pallet-timestamp/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
+	"sp-staking/runtime-benchmarks",
+]
+try-runtime = [
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"pallet-authorship/try-runtime",
+	"pallet-session/try-runtime",
+	"pallet-timestamp/try-runtime",
+	"sp-runtime/try-runtime",
+]

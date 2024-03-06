@@ -1,0 +1,83 @@
+[package]
+name = "node-template"
+version = "0.1.0"
+description = "A fresh FRAME-based Substrate node, ready for hacking."
+authors = ["Substrate DevHub <https://github.com/substrate-developer-hub>"]
+homepage = "https://substrate.io/"
+edition.workspace = true
+license = "MIT-0"
+publish = false
+repository = "https://github.com/substrate-developer-hub/substrate-node-template/"
+build = "build.rs"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[[bin]]
+name = "node-template"
+
+[dependencies]
+clap = { version = "4.4.6", features = ["derive"] }
+futures = { version = "0.3.21", features = ["thread-pool"]}
+sc-cli = { version = "0.33.0", path = "../../../client/cli" }
+sp-core = { version = "25.0.0", path = "../../../primitives/core" }
+sc-executor = { version = "0.29.0", path = "../../../client/executor" }
+sc-network = { version = "0.31.0", path = "../../../client/network" }
+sc-service = { version = "0.32.0", path = "../../../client/service" }
+sc-telemetry = { version = "12.0.0", path = "../../../client/telemetry" }
+sc-transaction-pool = { version = "25.0.0", path = "../../../client/transaction-pool" }
+sc-transaction-pool-api = { version = "25.0.0", path = "../../../client/transaction-pool/api" }
+sc-offchain = { version = "26.0.0", path = "../../../client/offchain" }
+sc-consensus-aura = { version = "0.31.0", path = "../../../client/consensus/aura" }
+sp-consensus-aura = { version = "0.29.0", path = "../../../primitives/consensus/aura" }
+sc-consensus = { version = "0.30.0", path = "../../../client/consensus/common" }
+sc-consensus-grandpa = { version = "0.16.0", path = "../../../client/consensus/grandpa" }
+sp-consensus-grandpa = { version = "10.0.0", path = "../../../primitives/consensus/grandpa" }
+sc-client-api = { version = "25.0.0", path = "../../../client/api" }
+sp-runtime = { version = "28.0.0", path = "../../../primitives/runtime" }
+sp-io = { version = "27.0.0", path = "../../../primitives/io" }
+sp-timestamp = { version = "23.0.0", path = "../../../primitives/timestamp" }
+sp-inherents = { version = "23.0.0", path = "../../../primitives/inherents" }
+sp-keyring = { version = "28.0.0", path = "../../../primitives/keyring" }
+frame-system = { version = "25.0.0", path = "../../../frame/system" }
+pallet-transaction-payment = { path = "../../../frame/transaction-payment", default-features = false, version = "25.0.0" }
+
+# These dependencies are used for the node template's RPCs
+jsonrpsee = { version = "0.16.2", features = ["server"] }
+sp-api = { version = "23.0.0", path = "../../../primitives/api" }
+sc-rpc-api = { version = "0.30.0", path = "../../../client/rpc-api" }
+sp-blockchain = { version = "25.0.0", path = "../../../primitives/blockchain" }
+sp-block-builder = { version = "23.0.0", path = "../../../primitives/block-builder" }
+sc-basic-authorship = { version = "0.31.0", path = "../../../client/basic-authorship" }
+substrate-frame-rpc-system = { version = "25.0.0", path = "../../../utils/frame/rpc/system" }
+pallet-transaction-payment-rpc = { version = "27.0.0", path = "../../../frame/transaction-payment/rpc" }
+frame-benchmarking = { version = "25.0.0", path = "../../../frame/benchmarking" }
+frame-benchmarking-cli = { version = "29.0.0", path = "../../../utils/frame/benchmarking-cli" }
+node-template-runtime = { version = "0.1.0", path = "../runtime" }
+
+# CLI-specific dependencies
+try-runtime-cli = { path = "../../../utils/frame/try-runtime/cli", optional = true, version = "0.35.0" }
+
+[build-dependencies]
+substrate-build-script-utils = { version = "9.0.0", path = "../../../utils/build-script-utils" }
+
+[features]
+default = []
+# Dependencies that are only required if runtime benchmarking should be build.
+runtime-benchmarks = [
+	"frame-benchmarking-cli/runtime-benchmarks",
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+	"node-template-runtime/runtime-benchmarks",
+	"sc-service/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
+]
+# Enable features that allow the runtime to be tried and debugged. Name might be subject to change
+# in the near future.
+try-runtime = [
+	"frame-system/try-runtime",
+	"node-template-runtime/try-runtime",
+	"pallet-transaction-payment/try-runtime",
+	"sp-runtime/try-runtime",
+	"try-runtime-cli/try-runtime",
+]

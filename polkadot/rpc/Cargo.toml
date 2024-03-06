@@ -1,0 +1,53 @@
+[package]
+name = "polkadot-rpc"
+version = "4.0.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "polkadot-rpc"
+
+[dependencies]
+jsonrpsee = { version = "0.16.2", features = ["server"] }
+polkadot-primitives = { version = "4.0.0", path = "../primitives" }
+sc-client-api = { version = "25.0.0", path = "../../substrate/client/api" }
+sp-blockchain = { version = "25.0.0", path = "../../substrate/primitives/blockchain" }
+sp-keystore = { version = "0.31.0", path = "../../substrate/primitives/keystore" }
+sp-runtime = { version = "28.0.0", path = "../../substrate/primitives/runtime" }
+sp-api = { version = "23.0.0", path = "../../substrate/primitives/api" }
+sp-consensus = { version = "0.29.0", path = "../../substrate/primitives/consensus/common" }
+sp-consensus-babe = { version = "0.29.0", path = "../../substrate/primitives/consensus/babe" }
+sp-session = { path = "../../substrate/primitives/session", default-features = false, version = "24.0.0" }
+sc-chain-spec = { version = "24.0.0", path = "../../substrate/client/chain-spec" }
+sc-rpc = { version = "26.0.0", path = "../../substrate/client/rpc" }
+sc-service = { version = "0.32.0", path = "../../substrate/client/service" }
+sp-offchain = { path = "../../substrate/primitives/offchain", default-features = false, version = "23.0.0" }
+sp-inherents = { version = "23.0.0", path = "../../substrate/primitives/inherents" }
+sp-transaction-pool = { version = "23.0.0", path = "../../substrate/primitives/transaction-pool" }
+sc-consensus-babe = { version = "0.31.0", path = "../../substrate/client/consensus/babe" }
+sc-consensus-babe-rpc = { version = "0.31.0", path = "../../substrate/client/consensus/babe/rpc" }
+sc-consensus-beefy = { version = "10.0.0", path = "../../substrate/client/consensus/beefy" }
+sc-consensus-beefy-rpc = { version = "10.0.0", path = "../../substrate/client/consensus/beefy/rpc" }
+sc-consensus-epochs = { version = "0.30.0", path = "../../substrate/client/consensus/epochs" }
+sc-consensus-grandpa = { version = "0.16.0", path = "../../substrate/client/consensus/grandpa" }
+sc-consensus-grandpa-rpc = { version = "0.16.0", path = "../../substrate/client/consensus/grandpa/rpc" }
+sc-sync-state-rpc = { version = "0.31.0", path = "../../substrate/client/sync-state-rpc" }
+sc-transaction-pool = { version = "25.0.0", path = "../../substrate/client/transaction-pool" }
+sc-network = { version = "0.31.0", path = "../../substrate/client/network" }
+sc-network-sync = { version = "0.30.0", path = "../../substrate/client/network/sync" }
+txpool-api = { package = "sc-transaction-pool-api", path = "../../substrate/client/transaction-pool/api", version = "25.0.0" }
+frame-rpc-system = { package = "substrate-frame-rpc-system", path = "../../substrate/utils/frame/rpc/system", version = "25.0.0" }
+mmr-rpc = { version = "25.0.0", path = "../../substrate/client/merkle-mountain-range/rpc" }
+pallet-transaction-payment-rpc = { version = "27.0.0", path = "../../substrate/frame/transaction-payment/rpc" }
+pallet-transaction-payment-rpc-runtime-api = { path = "../../substrate/frame/transaction-payment/rpc/runtime-api", default-features = false, version = "25.0.0" }
+sp-block-builder = { version = "23.0.0", path = "../../substrate/primitives/block-builder" }
+substrate-state-trie-migration-rpc = { version = "24.0.0", path = "../../substrate/utils/frame/rpc/state-trie-migration-rpc" }
+
+# Ethereum (Frontier)
+fc-api = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
+fc-consensus = { git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
+fc-db = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
+fc-mapping-sync = { git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
+fc-rpc = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
+fc-rpc-core = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
+fp-storage = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
+fp-rpc = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }

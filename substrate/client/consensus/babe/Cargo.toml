@@ -1,0 +1,53 @@
+[package]
+name = "sc-consensus-babe"
+version = "0.31.0"
+authors.workspace = true
+description = "BABE consensus algorithm for substrate"
+edition.workspace = true
+license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+homepage = "https://substrate.io"
+repository.workspace = true
+documentation = "https://docs.rs/sc-consensus-babe"
+readme = "README.md"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+async-trait = "0.1.57"
+codec = { package = "parity-scale-codec", version = "3.6.1", features = ["derive"] }
+futures = "0.3.21"
+log = "0.4.17"
+num-bigint = "0.4.3"
+num-rational = "0.4.1"
+num-traits = "0.2.8"
+parking_lot = "0.12.1"
+thiserror = "1.0"
+fork-tree = { version = "11.0.0", path = "../../../utils/fork-tree" }
+prometheus-endpoint = { package = "substrate-prometheus-endpoint", path = "../../../utils/prometheus", version = "0.16.0" }
+sc-client-api = { version = "25.0.0", path = "../../api" }
+sc-consensus = { version = "0.30.0", path = "../common" }
+sc-consensus-epochs = { version = "0.30.0", path = "../epochs" }
+sc-consensus-slots = { version = "0.30.0", path = "../slots" }
+sc-telemetry = { version = "12.0.0", path = "../../telemetry" }
+sc-transaction-pool-api = { version = "25.0.0", path = "../../transaction-pool/api" }
+sp-api = { version = "23.0.0", path = "../../../primitives/api" }
+sp-application-crypto = { version = "27.0.0", path = "../../../primitives/application-crypto" }
+sp-block-builder = { version = "23.0.0", path = "../../../primitives/block-builder" }
+sp-blockchain = { version = "25.0.0", path = "../../../primitives/blockchain" }
+sp-consensus = { version = "0.29.0", path = "../../../primitives/consensus/common" }
+sp-consensus-babe = { version = "0.29.0", path = "../../../primitives/consensus/babe" }
+sp-consensus-slots = { version = "0.29.0", path = "../../../primitives/consensus/slots" }
+sp-core = { version = "25.0.0", path = "../../../primitives/core" }
+sp-inherents = { version = "23.0.0", path = "../../../primitives/inherents" }
+sp-keystore = { version = "0.31.0", path = "../../../primitives/keystore" }
+sp-runtime = { version = "28.0.0", path = "../../../primitives/runtime" }
+
+[dev-dependencies]
+sc-block-builder = { path = "../../block-builder" }
+sp-keyring = { path = "../../../primitives/keyring" }
+sc-network-test = { path = "../../network/test" }
+sp-timestamp = { path = "../../../primitives/timestamp" }
+sp-tracing = { path = "../../../primitives/tracing" }
+substrate-test-runtime-client = { path = "../../../test-utils/runtime/client" }
+tokio = "1.22.0"

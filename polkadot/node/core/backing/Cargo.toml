@@ -1,0 +1,32 @@
+[package]
+name = "polkadot-node-core-backing"
+version = "4.0.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "polkadot-node-core-backing"
+
+[dependencies]
+futures = "0.3.21"
+sp-keystore = { version = "0.31.0", path = "../../../../substrate/primitives/keystore" }
+polkadot-primitives = { version = "4.0.0", path = "../../../primitives" }
+polkadot-node-primitives = { version = "4.0.0", path = "../../primitives" }
+polkadot-node-subsystem = { version = "4.0.0", path = "../../subsystem" }
+polkadot-node-subsystem-util = { version = "4.0.0", path = "../../subsystem-util" }
+erasure-coding = { package = "polkadot-erasure-coding", path = "../../../erasure-coding", version = "4.0.0" }
+statement-table = { package = "polkadot-statement-table", path = "../../../statement-table", version = "4.0.0" }
+bitvec = { version = "1.0.0", default-features = false, features = ["alloc"] }
+gum = { package = "tracing-gum", path = "../../gum", version = "4.0.0" }
+thiserror = "1.0.48"
+fatality = "0.0.6"
+
+[dev-dependencies]
+sp-core = { path = "../../../../substrate/primitives/core" }
+sp-application-crypto = { path = "../../../../substrate/primitives/application-crypto" }
+sp-keyring = { path = "../../../../substrate/primitives/keyring" }
+sc-keystore = { path = "../../../../substrate/client/keystore" }
+sp-tracing = { path = "../../../../substrate/primitives/tracing" }
+futures = { version = "0.3.21", features = ["thread-pool"] }
+assert_matches = "1.4.0"
+polkadot-node-subsystem-test-helpers = { path = "../../subsystem-test-helpers" }
+test-helpers = { package = "polkadot-primitives-test-helpers", path = "../../../primitives/test-helpers" }

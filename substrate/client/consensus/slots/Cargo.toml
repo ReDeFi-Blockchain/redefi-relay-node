@@ -1,0 +1,35 @@
+[package]
+name = "sc-consensus-slots"
+version = "0.30.0"
+authors.workspace = true
+description = "Generic slots-based utilities for consensus"
+edition.workspace = true
+build = "build.rs"
+license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
+homepage = "https://substrate.io"
+repository.workspace = true
+readme = "README.md"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+async-trait = "0.1.57"
+codec = { package = "parity-scale-codec", version = "3.6.1" }
+futures = "0.3.21"
+futures-timer = "3.0.1"
+log = "0.4.17"
+sc-client-api = { version = "25.0.0", path = "../../api" }
+sc-consensus = { version = "0.30.0", path = "../common" }
+sc-telemetry = { version = "12.0.0", path = "../../telemetry" }
+sp-arithmetic = { version = "20.0.0", path = "../../../primitives/arithmetic" }
+sp-blockchain = { version = "25.0.0", path = "../../../primitives/blockchain" }
+sp-consensus = { version = "0.29.0", path = "../../../primitives/consensus/common" }
+sp-consensus-slots = { version = "0.29.0", path = "../../../primitives/consensus/slots" }
+sp-core = { version = "25.0.0", path = "../../../primitives/core" }
+sp-inherents = { version = "23.0.0", path = "../../../primitives/inherents" }
+sp-runtime = { version = "28.0.0", path = "../../../primitives/runtime" }
+sp-state-machine = { version = "0.32.0", path = "../../../primitives/state-machine" }
+
+[dev-dependencies]
+substrate-test-runtime-client = { path = "../../../test-utils/runtime/client" }
