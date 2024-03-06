@@ -108,6 +108,7 @@ pub use pallet_balances::Call as BalancesCall;
 use rococo_runtime_constants::{currency::*, fee::*, time::*};
 
 // Weights used in the runtime.
+mod ethereum;
 mod weights;
 
 // XCM configurations.
@@ -1358,6 +1359,10 @@ construct_runtime! {
 
 		// Pallet for sending XCM.
 		XcmPallet: pallet_xcm::{Pallet, Call, Storage, Event<T>, Origin, Config<T>} = 99,
+
+		// EVM
+		EVM: pallet_evm = 102,
+		Ethereum: pallet_ethereum = 103,
 
 		ParasSudoWrapper: paras_sudo_wrapper::{Pallet, Call} = 250,
 		AssignedSlots: assigned_slots::{Pallet, Call, Storage, Event<T>, Config<T>} = 251,
