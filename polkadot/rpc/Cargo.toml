@@ -16,8 +16,13 @@ sp-runtime = { version = "29.0.0", path = "../../substrate/primitives/runtime" }
 sp-api = { version = "24.0.0", path = "../../substrate/primitives/api" }
 sp-consensus = { version = "0.30.0", path = "../../substrate/primitives/consensus/common" }
 sp-consensus-babe = { version = "0.30.0", path = "../../substrate/primitives/consensus/babe" }
+sp-session = { path = "../../substrate/primitives/session", default-features = false, version = "25.0.0" }
 sc-chain-spec = { version = "25.0.0", path = "../../substrate/client/chain-spec" }
 sc-rpc = { version = "27.0.0", path = "../../substrate/client/rpc" }
+sc-service = { version = "0.33.0", path = "../../substrate/client/service" }
+sp-offchain = { path = "../../substrate/primitives/offchain", default-features = false, version = "24.0.0" }
+sp-inherents = { version = "24.0.0", path = "../../substrate/primitives/inherents" }
+sp-transaction-pool = { version = "24.0.0", path = "../../substrate/primitives/transaction-pool" }
 sc-consensus-babe = { version = "0.32.0", path = "../../substrate/client/consensus/babe" }
 sc-consensus-babe-rpc = { version = "0.32.0", path = "../../substrate/client/consensus/babe/rpc" }
 sc-consensus-beefy = { version = "11.0.0", path = "../../substrate/client/consensus/beefy" }
@@ -26,9 +31,23 @@ sc-consensus-epochs = { version = "0.31.0", path = "../../substrate/client/conse
 sc-consensus-grandpa = { version = "0.17.0", path = "../../substrate/client/consensus/grandpa" }
 sc-consensus-grandpa-rpc = { version = "0.17.0", path = "../../substrate/client/consensus/grandpa/rpc" }
 sc-sync-state-rpc = { version = "0.32.0", path = "../../substrate/client/sync-state-rpc" }
+sc-transaction-pool = { version = "26.0.0", path = "../../substrate/client/transaction-pool" }
+sc-network = { version = "0.32.0", path = "../../substrate/client/network" }
+sc-network-sync = { version = "0.31.0", path = "../../substrate/client/network/sync" }
 txpool-api = { package = "sc-transaction-pool-api", path = "../../substrate/client/transaction-pool/api", version = "26.0.0" }
 frame-rpc-system = { package = "substrate-frame-rpc-system", path = "../../substrate/utils/frame/rpc/system", version = "26.0.0" }
 mmr-rpc = { version = "26.0.0", path = "../../substrate/client/merkle-mountain-range/rpc" }
 pallet-transaction-payment-rpc = { version = "28.0.0", path = "../../substrate/frame/transaction-payment/rpc" }
+pallet-transaction-payment-rpc-runtime-api = { path = "../../substrate/frame/transaction-payment/rpc/runtime-api", default-features = false, version = "26.0.0" }
 sp-block-builder = { version = "24.0.0", path = "../../substrate/primitives/block-builder" }
 substrate-state-trie-migration-rpc = { version = "25.0.0", path = "../../substrate/utils/frame/rpc/state-trie-migration-rpc" }
+
+# Ethereum (Frontier)
+fc-api = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.4.0" }
+fc-consensus = { git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.4.0" }
+fc-db = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.4.0" }
+fc-mapping-sync = { git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.4.0" }
+fc-rpc = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.4.0" }
+fc-rpc-core = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.4.0" }
+fp-storage = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.4.0" }
+fp-rpc = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.4.0" }

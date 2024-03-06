@@ -946,10 +946,11 @@ pub fn rococo_testnet_genesis(
 				..default_parachains_host_configuration()
 			},
 		},
+		"paras": rococo_runtime::ParasConfig { paras: vec![], ..Default::default() },
 		"registrar": {
 			"nextFreeParaId": polkadot_primitives::LOWEST_PUBLIC_ID,
-		}
-	})
+		},
+	}
 }
 
 #[cfg(feature = "westend-native")]

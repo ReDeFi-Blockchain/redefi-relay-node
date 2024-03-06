@@ -38,6 +38,8 @@ sp-version = { path = "../../../substrate/primitives/version", default-features 
 tx-pool-api = { package = "sp-transaction-pool", path = "../../../substrate/primitives/transaction-pool", default-features = false, version = "24.0.0" }
 block-builder-api = { package = "sp-block-builder", path = "../../../substrate/primitives/block-builder", default-features = false, version = "24.0.0" }
 
+sp-weights = { path = "../../../substrate/primitives/weights", default-features = false, version = "25.0.0" }
+
 pallet-authority-discovery = { path = "../../../substrate/frame/authority-discovery", default-features = false, version = "26.0.0" }
 pallet-authorship = { path = "../../../substrate/frame/authorship", default-features = false, version = "26.0.0" }
 pallet-babe = { path = "../../../substrate/frame/babe", default-features = false, version = "26.0.0" }
@@ -101,6 +103,15 @@ polkadot-parachain-primitives = { path = "../../parachain", default-features = f
 xcm = { package = "staging-xcm", path = "../../xcm", default-features = false, version = "5.0.0" }
 xcm-executor = { package = "staging-xcm-executor", path = "../../xcm/xcm-executor", default-features = false, version = "5.0.0" }
 xcm-builder = { package = "staging-xcm-builder", path = "../../xcm/xcm-builder", default-features = false, version = "5.0.0" }
+
+# Frontier
+pallet-ethereum = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
+pallet-evm = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
+fp-evm = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
+fp-rpc = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
+fp-self-contained = { default-features = false, features = [
+	"serde",
+], git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.3.0" }
 
 [dev-dependencies]
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
@@ -205,6 +216,8 @@ std = [
 	"xcm-builder/std",
 	"xcm-executor/std",
 	"xcm/std",
+	"pallet-evm/std",
+	"pallet-ethereum/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -256,6 +269,7 @@ runtime-benchmarks = [
 	"sp-staking/runtime-benchmarks",
 	"xcm-builder/runtime-benchmarks",
 	"xcm-executor/runtime-benchmarks",
+	"pallet-ethereum/runtime-benchmarks",
 ]
 try-runtime = [
 	"frame-executive/try-runtime",
@@ -309,6 +323,8 @@ try-runtime = [
 	"runtime-common/try-runtime",
 	"runtime-parachains/try-runtime",
 	"sp-runtime/try-runtime",
+	"pallet-ethereum/try-runtime",
+	"pallet-evm/try-runtime",
 ]
 
 # Set timing constants (e.g. session period) to faster versions to speed up testing.

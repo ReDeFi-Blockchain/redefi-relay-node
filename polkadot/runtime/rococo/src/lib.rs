@@ -109,6 +109,7 @@ pub use pallet_balances::Call as BalancesCall;
 use rococo_runtime_constants::{currency::*, fee::*, time::*};
 
 // Weights used in the runtime.
+mod ethereum;
 mod weights;
 
 // XCM configurations.
@@ -1393,6 +1394,10 @@ construct_runtime! {
 
 		// Pallet for sending XCM.
 		XcmPallet: pallet_xcm::{Pallet, Call, Storage, Event<T>, Origin, Config<T>} = 99,
+
+		// EVM
+		EVM: pallet_evm = 102,
+		Ethereum: pallet_ethereum = 103,
 
 		// Pallet for migrating Identity to a parachain. To be removed post-migration.
 		IdentityMigrator: identity_migrator::{Pallet, Call, Event<T>} = 248,

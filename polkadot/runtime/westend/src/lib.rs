@@ -116,6 +116,7 @@ pub use sp_runtime::BuildStorage;
 use westend_runtime_constants::{currency::*, fee::*, time::*};
 
 mod bag_thresholds;
+pub mod ethereum;
 mod weights;
 pub mod xcm_config;
 
@@ -1512,8 +1513,12 @@ construct_runtime! {
 		// Asset rate.
 		AssetRate: pallet_asset_rate::{Pallet, Call, Storage, Event<T>} = 101,
 
+		// EVM
+		EVM: pallet_evm = 102,
+		Ethereum: pallet_ethereum = 103,
+
 		// Root testing pallet.
-		RootTesting: pallet_root_testing::{Pallet, Call, Storage, Event<T>} = 102,
+		RootTesting: pallet_root_testing::{Pallet, Call, Storage, Event<T>} = 104,
 
 		// Pallet for migrating Identity to a parachain. To be removed post-migration.
 		IdentityMigrator: identity_migrator::{Pallet, Call, Event<T>} = 248,
