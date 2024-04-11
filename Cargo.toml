@@ -619,3 +619,4 @@ sp-version-proc-macro = { path = "./substrate/primitives/version/proc-macro" }
 sp-wasm-interface = { path = "./substrate/primitives/wasm-interface" }
 sp-weights = { path = "./substrate/primitives/weights" }
 substrate-prometheus-endpoint = { path = "./substrate/utils/prometheus" }
+ss58-registry = { git = "https://github.com/ReDeFi-Blockchain/ss58-registry.git", branch = "main" }

@@ -17808,9 +17808,8 @@ dependencies = [
 
 [[package]]
 name = "ss58-registry"
-version = "1.43.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e6915280e2d0db8911e5032a5c275571af6bdded2916abd691a659be25d3439"
+version = "1.48.0"
+source = "git+https://github.com/ReDeFi-Blockchain/ss58-registry.git?branch=main#cd056fcf1611b2c4da3abe6c77207c0a6745f537"
 dependencies = [
  "Inflector",
  "num-format",
