@@ -1,5 +1,5 @@
-name: Relay Node Only
 
+name: Relay-Node-Only
 on:
   pull_request:
     branches: [ 'develop' ]
