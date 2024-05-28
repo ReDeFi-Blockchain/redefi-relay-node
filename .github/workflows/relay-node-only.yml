@@ -18,11 +18,11 @@ jobs:
     steps:
       - name: Echo
         run: |
-          echo "HEAD_REF: ${{ github.head_ref }}"
+          echo "HEAD_REF: ${{ github.ref }}"
 
   build:
     name: Trigger running relay node only workflow
     uses: ReDeFi-Blockchain/redefi-infra/.github/workflows/test-reusable-vars.yml@ci/workflows
     secrets: inherit
     with:
-      relay-node-branch: ${{ github.head_ref }}
+      relay-node-branch: ${{ github.ref }}
