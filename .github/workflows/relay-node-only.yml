@@ -14,9 +14,11 @@ on:
 jobs:
   echo:
     name: Echo github.head_ref
+    runs-on: [ redefi-03 ]
     steps:
       - name: Echo
-        run: echo "HEAD_REF: ${{ github.head_ref }}"
+        run: |
+          echo "HEAD_REF: ${{ github.head_ref }}"
 
   build:
     name: Trigger running relay node only workflow
