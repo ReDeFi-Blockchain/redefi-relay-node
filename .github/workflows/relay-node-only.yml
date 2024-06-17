@@ -1,0 +1,28 @@
+name: Relay Node Only
+
+on:
+  pull_request:
+    branches: [ 'develop' ]
+    types: [ opened, reopened, synchronize, ready_for_review, converted_to_draft ]
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: string
+        description: branch to build
+        default: main
+
+jobs:
+  echo:
+    name: Echo github.head_ref
+    runs-on: [ redefi-03 ]
+    steps:
+      - name: Echo
+        run: |
+          echo "HEAD_REF: ${{ github.head_ref }}"
+
+  build:
+    name: Trigger running relay node only workflow
+    uses: ReDeFi-Blockchain/redefi-infra/.github/workflows/test-reusable-vars.yml@ci/workflows
+    secrets: inherit
+    with:
+      relay-node-branch: ${{ github.head_ref }}
