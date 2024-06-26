@@ -14,8 +14,8 @@ pub struct FrontierTaskParams<'a, C, B> {
 	pub prometheus_registry: Option<Registry>,
 }
 
-pub(crate) fn ethereum_relay_inherent() -> (sp_timestamp::InherentDataProvider) {
-	(sp_timestamp::InherentDataProvider::from_system_time())
+pub(crate) fn ethereum_relay_inherent() -> sp_timestamp::InherentDataProvider {
+	sp_timestamp::InherentDataProvider::from_system_time()
 }
 
 pub fn spawn_frontier_tasks<C, B>(
