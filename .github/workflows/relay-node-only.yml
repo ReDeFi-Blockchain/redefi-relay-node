@@ -5,11 +5,7 @@ on:
     branches: [ 'develop' ]
     types: [ opened, reopened, synchronize, ready_for_review, converted_to_draft ]
   workflow_dispatch:
-    inputs:
-      branch:
-        type: string
-        description: branch to build
-        default: main
+
 
 jobs:
   echo:
