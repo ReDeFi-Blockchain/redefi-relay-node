@@ -22,7 +22,7 @@ jobs:
 
   build:
     name: Trigger running relay node only workflow
-    uses: ReDeFi-Blockchain/redefi-infra/.github/workflows/test-reusable-vars.yml@ci/workflows
+    uses: ReDeFi-Blockchain/redefi-infra/.github/workflows/test-reusable-vars.yml
     secrets: inherit
     with:
       relay-node-branch: ${{ github.ref }}
