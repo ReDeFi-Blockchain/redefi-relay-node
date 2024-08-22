@@ -5,9 +5,9 @@ pub struct FrontierTaskParams<'a, C, B> {
 	pub task_manager: &'a TaskManager,
 	pub client: Arc<C>,
 	pub substrate_backend: Arc<B>,
-	pub eth_backend: Arc<fc_db::kv::Backend<Block>>,
+	pub eth_backend: Arc<fc_db::kv::Backend<Block, C>>,
 	pub eth_filter_pool: Option<FilterPool>,
-	pub overrides: Arc<OverrideHandle<Block>>,
+	pub storage_override: Arc<dyn StorageOverride<Block>>,
 	pub fee_history_limit: u64,
 	pub fee_history_cache: FeeHistoryCache,
 	pub sync_strategy: SyncStrategy,
@@ -33,7 +33,7 @@ where
 	C::Api: EthereumRuntimeRPCApi<Block>,
 	C::Api: BlockBuilder<Block>,
 	B: Backend<Block> + 'static,
-	B::State: StateBackend<BlakeTwo256>,
+	//B::State: StateBackend<BlakeTwo256>,
 {
 	let FrontierTaskParams {
 		task_manager,
@@ -41,7 +41,7 @@ where
 		substrate_backend,
 		eth_backend,
 		eth_filter_pool,
-		overrides,
+		storage_override,
 		fee_history_limit,
 		fee_history_cache,
 		sync_strategy,
@@ -57,7 +57,7 @@ where
 			Duration::new(6, 0),
 			client.clone(),
 			substrate_backend,
-			overrides.clone(),
+			storage_override.clone(),
 			eth_backend,
 			3,
 			0,
@@ -84,43 +84,14 @@ where
 	params.task_manager.spawn_essential_handle().spawn(
 		"frontier-fee-history",
 		Some("frontier"),
-		EthTask::fee_history_task(client, overrides.clone(), fee_history_cache, fee_history_limit),
+		EthTask::fee_history_task(client, storage_override.clone(), fee_history_cache, fee_history_limit),
 	);
 
 	Arc::new(EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
-		overrides,
+		storage_override,
 		50,
 		50,
 		prometheus_registry,
 	))
-}
-
-pub(crate) fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<OverrideHandle<Block>>
-where
-	C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
-	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = sp_blockchain::Error>,
-	C: Send + Sync + 'static,
-	C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
-	BE: Backend<Block> + 'static,
-	BE::State: StateBackend<BlakeTwo256>,
-{
-	let mut overrides_map = BTreeMap::new();
-	let _ = overrides_map.insert(
-		EthereumStorageSchema::V1,
-		Box::new(SchemaV1Override::new(client.clone())) as Box<dyn StorageOverride<_> + 'static>,
-	);
-	let _ = overrides_map.insert(
-		EthereumStorageSchema::V2,
-		Box::new(SchemaV2Override::new(client.clone())) as Box<dyn StorageOverride<_> + 'static>,
-	);
-	let _ = overrides_map.insert(
-		EthereumStorageSchema::V3,
-		Box::new(SchemaV3Override::new(client.clone())) as Box<dyn StorageOverride<_> + 'static>,
-	);
-
-	Arc::new(OverrideHandle {
-		schemas: overrides_map,
-		fallback: Box::new(RuntimeApiStorageOverride::new(client)),
-	})
 }

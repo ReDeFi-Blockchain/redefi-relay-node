@@ -1,69 +1,83 @@
+use ethereum_types::H256;
+
+use fc_storage::StorageOverride;
+use fp_rpc::{ConvertTransactionRuntimeApi, EthereumRuntimeRPCApi};
+
 use sc_client_api::Backend;
+use sc_network::service::traits::NetworkService;
+use sp_block_builder::BlockBuilder as BlockBuilderApi;
+use sp_runtime::traits::Block as BlockT;
 
 use crate::*;
 
-pub struct DefaultEthConfig<BE, C>(PhantomData<(BE, C)>);
-impl<BE, C> EthConfig<Block, C> for DefaultEthConfig<BE, C>
+pub struct DefaultEthConfig<C, BE>(PhantomData<(C, BE)>);
+
+impl<C, BE> EthConfig<Block, C> for DefaultEthConfig<C, BE>
 where
-	BE: Backend<Block> + 'static,
 	C: StorageProvider<Block, BE> + Sync + Send + 'static,
+	BE: Backend<Block> + 'static,
 {
 	type EstimateGasAdapter = ();
 	type RuntimeStorageOverride = SystemAccountId32StorageOverride<Block, C, BE>;
 }
 
-pub struct EthDeps<C, P, CA: ChainApi, CIDP> {
+pub struct EthDeps<B: BlockT, C, P, A: ChainApi, CIDP> {
 	/// The client instance to use.
 	pub client: Arc<C>,
 	/// Transaction pool instance.
 	pub pool: Arc<P>,
 	/// Graph pool instance.
-	pub graph: Arc<Pool<CA>>,
+	pub graph: Arc<Pool<A>>,
 	/// Syncing service
-	pub sync: Arc<SyncingService<Block>>,
+	pub sync: Arc<SyncingService<B>>,
 	/// The Node authority flag
 	pub is_authority: bool,
 	/// Network service
-	pub network: Arc<NetworkService<Block, Hash>>,
+	pub network: Arc<dyn NetworkService>,
 
 	/// Ethereum Backend.
-	pub eth_backend: Arc<dyn fc_api::Backend<Block> + Send + Sync>,
+	pub eth_backend: Arc<dyn fc_api::Backend<B> + Send + Sync>,
+	/// Ethereum data access overrides.
+	pub storage_override: Arc<dyn StorageOverride<B>>,
 	/// Maximum number of logs in a query.
 	pub max_past_logs: u32,
 	/// Maximum fee history cache size.
 	pub fee_history_limit: u64,
 	/// Fee history cache.
 	pub fee_history_cache: FeeHistoryCache,
-	pub eth_block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
+	pub eth_block_data_cache: Arc<EthBlockDataCacheTask<B>>,
 	/// EthFilterApi pool.
 	pub eth_filter_pool: Option<FilterPool>,
 	pub eth_pubsub_notification_sinks:
-		Arc<EthereumBlockNotificationSinks<EthereumBlockNotification<Block>>>,
+		Arc<EthereumBlockNotificationSinks<EthereumBlockNotification<B>>>,
 	/// Whether to enable eth dev signer
 	pub enable_dev_signer: bool,
-
-	pub overrides: Arc<OverrideHandle<Block>>,
+	
 	pub pending_create_inherent_data_providers: CIDP,
 }
 
-pub fn create_eth<C, P, CA, B, CIDP, EC>(
+pub fn create_eth<B, C, BE, P, A, CIDP, EC>(
 	io: &mut RpcExtension,
-	deps: EthDeps<C, P, CA, CIDP>,
+	deps: EthDeps<B, C, P, A, CIDP>,
 	subscription_task_executor: SubscriptionTaskExecutor,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>
 where
-	C: ProvideRuntimeApi<Block> + StorageProvider<Block, B> + AuxStore,
-	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError>,
+	B: BlockT<Hash = H256>,
+	BE: Backend<B> + 'static,
+	C: sp_api::CallApiAt<B> + ProvideRuntimeApi<B>,
+	C: StorageProvider<B, BE> + AuxStore,
+	C: HeaderBackend<B> + HeaderMetadata<B, Error = BlockChainError>,
 	C: Send + Sync + 'static,
-	C: BlockchainEvents<Block>,
-	C: UsageProvider<Block>,
-	C::Api: RuntimeApiDep,
-	P: TransactionPool<Block = Block> + 'static,
-	CA: ChainApi<Block = Block> + 'static,
-	B: sc_client_api::Backend<Block> + Send + Sync + 'static,
-	C: sp_api::CallApiAt<Block>,
-	CIDP: CreateInherentDataProviders<Block, ()> + Send + 'static,
-	EC: EthConfig<Block, C>,
+	C: BlockchainEvents<B>,
+	C: UsageProvider<B>,
+	C::Api: RuntimeApiDep
+		+ BlockBuilderApi<B>
+		+ ConvertTransactionRuntimeApi<B>
+		+ EthereumRuntimeRPCApi<B>,
+	P: TransactionPool<Block = B> + 'static,
+	A: ChainApi<Block = B> + 'static,
+	CIDP: CreateInherentDataProviders<B, ()> + Send + 'static,
+	EC: EthConfig<B, C>,
 {
 	use fc_rpc::{
 		Eth, EthApiServer, EthDevSigner, EthFilter, EthFilterApiServer, EthPubSub,
@@ -75,6 +89,7 @@ where
 		pool,
 		graph,
 		eth_backend,
+		storage_override,
 		max_past_logs,
 		fee_history_limit,
 		fee_history_cache,
@@ -85,7 +100,6 @@ where
 		sync,
 		is_authority,
 		network,
-		overrides,
 		pending_create_inherent_data_providers,
 	} = deps;
 
@@ -95,7 +109,7 @@ where
 	}
 	let execute_gas_limit_multiplier = 10;
 	io.merge(
-		Eth::<_, _, _, _, _, _, _, EC>::new(
+		Eth::<B, C, P, _, BE, A, CIDP, EC>::new(
 			client.clone(),
 			pool.clone(),
 			graph.clone(),
@@ -103,7 +117,7 @@ where
 			None::<NoTransactionConverter>,
 			sync.clone(),
 			signers,
-			overrides.clone(),
+			storage_override.clone(),
 			eth_backend.clone(),
 			is_authority,
 			eth_block_data_cache.clone(),
@@ -115,6 +129,7 @@ where
 			// Our extrinsics have nothing to do with consensus digest items yet.
 			None,
 		)
+		.replace_config::<EC>()
 		.into_rpc(),
 	)?;
 
@@ -148,7 +163,7 @@ where
 			client,
 			sync,
 			subscription_task_executor,
-			overrides,
+			storage_override,
 			eth_pubsub_notification_sinks,
 		)
 		.into_rpc(),

@@ -10,6 +10,7 @@ description = "Polkadot specific RPC functionality. (polkadot v1.14.0)"
 workspace = true
 
 [dependencies]
+ethereum-types = { workspace = true }
 jsonrpsee = { features = ["server"], workspace = true }
 polkadot-primitives.workspace = true
 polkadot-primitives.default-features = true
@@ -81,6 +82,7 @@ fc-api = { default-features = false, git = "https://github.com/uniquenetwork/uni
 fc-consensus = { git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
 fc-db = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
 fc-mapping-sync = { git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
+fc-storage = { git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
 fc-rpc = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
 fc-rpc-core = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }
 fp-storage = { default-features = false, git = "https://github.com/uniquenetwork/unique-frontier", branch = "unique-polkadot-v1.14.0" }

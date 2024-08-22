@@ -16,7 +16,7 @@ ez_bounds!(
 		+ sp_session::SessionKeys<Block>
 		+ sp_block_builder::BlockBuilder<Block>
 		+ pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance>
-		+ frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
+		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
 		+ sp_api::Metadata<Block>
 		+ sp_offchain::OffchainWorkerApi<Block>
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
@@ -27,11 +27,11 @@ ez_bounds!(
 pub fn open_frontier_backend<C: HeaderBackend<Block>>(
 	client: Arc<C>,
 	config: &sc_service::Configuration,
-) -> Result<Arc<fc_db::kv::Backend<Block>>, String> {
+) -> Result<Arc<fc_db::kv::Backend<Block, C>>, String> {
 	let config_dir = config.base_path.config_dir(config.chain_spec.id());
 	let database_dir = config_dir.join("frontier").join("db");
 
-	Ok(Arc::new(fc_db::kv::Backend::<Block>::new(
+	Ok(Arc::new(fc_db::kv::Backend::<Block, C>::new(
 		client,
 		&fc_db::kv::DatabaseSettings {
 			source: fc_db::DatabaseSource::RocksDb { path: database_dir, cache_size: 0 },

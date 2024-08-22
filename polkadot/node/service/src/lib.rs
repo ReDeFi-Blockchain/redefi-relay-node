@@ -53,14 +53,15 @@ mod tests;
 
 #[cfg(feature = "full-node")]
 use {
-	beefy::BeefyRPCLinks,
+	sc_consensus_beefy::BeefyRPCLinks,
 	fc_mapping_sync::{
 		kv::MappingSyncWorker, EthereumBlockNotification, EthereumBlockNotificationSinks,
 		SyncStrategy,
 	},
+	sc_network_sync::strategy::warp::{WarpSyncParams, WarpSyncProvider},
 	fc_rpc::{
-		EthBlockDataCacheTask, EthTask, OverrideHandle, RuntimeApiStorageOverride,
-		SchemaV1Override, SchemaV2Override, SchemaV3Override, StorageOverride,
+		EthBlockDataCacheTask, EthTask, StorageOverrideHandler, RuntimeApiStorageOverride,
+		StorageOverride,
 	},
 	fc_rpc_core::types::{FeeHistoryCache, FilterPool},
 	fp_rpc::EthereumRuntimeRPCApi,
@@ -528,7 +529,7 @@ fn new_partial<ChainSelection>(
 				sc_consensus_babe::BabeLink<Block>,
 				sc_consensus_beefy::BeefyVoterLinks<Block, ecdsa_crypto::AuthorityId>,
 				polkadot_rpc::BabeDeps,
-				BeefyRPCLinks<Block>,
+				BeefyRPCLinks<Block, ecdsa_crypto::AuthorityId>,
 			),
 			sc_consensus_grandpa::SharedVoterState,
 			sp_consensus_babe::SlotDuration,
@@ -936,7 +937,7 @@ pub fn new_full<
 		Vec::new()
 	};
 
-	let warp_sync = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
+	let warp_sync: Arc<dyn WarpSyncProvider<Block>> = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
 		backend.clone(),
 		link_half.shared_authority_set().clone(),
 		grandpa_hard_forks,
@@ -1091,7 +1092,7 @@ pub fn new_full<
 			EthereumBlockNotificationSinks<EthereumBlockNotification<Block>>,
 		> = Default::default();
 		let fee_history_limit = 2048;
-		let overrides: Arc<OverrideHandle<Block>> = overrides_handle(client.clone());
+		let storage_override = Arc::new(StorageOverrideHandler::new(client.clone()));
 		let eth_block_data_cache = spawn_frontier_tasks(
 			FrontierTaskParams {
 				client: client.clone(),
@@ -1102,7 +1103,7 @@ pub fn new_full<
 				fee_history_cache: fee_history_cache.clone(),
 				task_manager: &task_manager,
 				prometheus_registry,
-				overrides: overrides.clone(),
+				storage_override: storage_override.clone(),
 				sync_strategy: SyncStrategy::Normal,
 			},
 			sync_service.clone(),
@@ -1124,7 +1125,7 @@ pub fn new_full<
 				validator,
 				eth_pubsub_notification_sinks,
 				eth_block_data_cache,
-				overrides,
+				storage_override,
 			);
 			let deps = polkadot_rpc::FullDeps {
 				client: client.clone(),
@@ -1156,6 +1157,7 @@ pub fn new_full<
 					is_authority: validator,
 					network,
 					eth_backend,
+					storage_override: storage_override.clone(),
 					// TODO: Unhardcode
 					max_past_logs: 10000,
 					fee_history_limit,
@@ -1165,7 +1167,6 @@ pub fn new_full<
 					eth_pubsub_notification_sinks,
 					// TODO: Unhardcode
 					enable_dev_signer: false,
-					overrides,
 					pending_create_inherent_data_providers: |_, ()| async move {
 						Ok(ethereum_relay_inherent())
 					},

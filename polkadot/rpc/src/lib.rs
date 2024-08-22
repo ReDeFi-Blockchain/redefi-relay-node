@@ -44,10 +44,7 @@ pub type RpcExtension = RpcModule<()>;
 /// Unique
 use core::marker::PhantomData;
 use fc_mapping_sync::{EthereumBlockNotification, EthereumBlockNotificationSinks};
-use fc_rpc::{
-	frontier_backend_client::SystemAccountId32StorageOverride, EthBlockDataCacheTask, EthConfig,
-	OverrideHandle,
-};
+use fc_rpc::{frontier_backend_client::SystemAccountId32StorageOverride, EthBlockDataCacheTask, EthConfig};
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use fp_rpc::NoTransactionConverter;
 use sc_client_api::{BlockchainEvents, StorageProvider, UsageProvider};
@@ -99,7 +96,7 @@ pub struct BeefyDeps<AuthorityId: AuthorityIdBound> {
 }
 
 /// Full client dependencies
-pub struct FullDeps<C, P, SC, B, CA: ChainApi, CIDP, AuthorityId: AuthorityIdBound> {
+pub struct FullDeps<C, P, SC, BE, A: ChainApi, CIDP, AuthorityId: AuthorityIdBound> {
 	/// The client instance to use.
 	pub client: Arc<C>,
 	/// Transaction pool instance.
@@ -113,17 +110,17 @@ pub struct FullDeps<C, P, SC, B, CA: ChainApi, CIDP, AuthorityId: AuthorityIdBou
 	/// BABE specific dependencies.
 	pub babe: BabeDeps,
 	/// GRANDPA specific dependencies.
-	pub grandpa: GrandpaDeps<B>,
+	pub grandpa: GrandpaDeps<BE>,
 	/// BEEFY specific dependencies.
 	pub beefy: BeefyDeps<AuthorityId>,
 	/// Eth specific dependencies.
-	pub eth: EthDeps<C, P, CA, CIDP>,
+	pub eth: EthDeps<Block, C, P, A, CIDP>,
 	/// Backend used by the node.
-	pub backend: Arc<B>,
+	pub backend: Arc<BE>,
 }
 
 /// Instantiate all RPC extensions.
-pub fn create_full<C, P, SC, B, CA: ChainApi, CIDP, AuthorityId>(
+pub fn create_full<C, P, SC, BE, A: ChainApi, CIDP, AuthorityId>(
 	FullDeps {
 		client,
 		pool,
@@ -135,7 +132,7 @@ pub fn create_full<C, P, SC, B, CA: ChainApi, CIDP, AuthorityId>(
 		beefy,
 		eth,
 		backend,
-	}: FullDeps<C, P, SC, B, CA, CIDP, AuthorityId>,
+	}: FullDeps<C, P, SC, BE, A, CIDP, AuthorityId>,
 	subscription_task_executor: SubscriptionTaskExecutor,
 ) -> Result<RpcExtension, Box<dyn std::error::Error + Send + Sync>>
 where
@@ -145,7 +142,7 @@ where
 		+ HeaderMetadata<Block, Error = BlockChainError>
 		+ Send
 		+ Sync
-		+ StorageProvider<Block, B>
+		+ StorageProvider<Block, BE>
 		+ 'static,
 	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
 	C: Send + Sync + 'static,
@@ -157,14 +154,13 @@ where
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: BabeApi<Block>,
 	C::Api: BlockBuilder<Block>,
-	CA: ChainApi<Block = Block> + 'static,
-	B: sc_client_api::Backend<Block> + Send + Sync + 'static,
+	A: ChainApi<Block = Block> + 'static,
 	C: sp_api::CallApiAt<Block>,
+	BE: sc_client_api::Backend<Block> + Send + Sync + 'static,
+	BE::State: sc_client_api::StateBackend<sp_runtime::traits::HashingFor<Block>>,
 	CIDP: CreateInherentDataProviders<Block, ()> + Send + 'static,
 	P: TransactionPool<Block = Block> + Sync + Send + 'static,
 	SC: SelectChain<Block> + 'static,
-	B: sc_client_api::Backend<Block> + Send + Sync + 'static,
-	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashingFor<Block>>,
 	AuthorityId: AuthorityIdBound,
 	<AuthorityId as RuntimeAppPublic>::Signature: Send + Sync,
 {
@@ -232,7 +228,7 @@ where
 		.into_rpc(),
 	)?;
 
-	create_eth::<_, _, _, _, _, DefaultEthConfig<B, C>>(&mut io, eth, subscription_task_executor)?;
+	create_eth::<_, _, _, _, _, _, DefaultEthConfig<C, BE>>(&mut io, eth, subscription_task_executor)?;
 
 	Ok(io)
 }
