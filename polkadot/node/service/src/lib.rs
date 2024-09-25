@@ -1054,7 +1054,9 @@ pub fn new_full<OverseerGenerator: OverseerGen>(
 					// TODO: Unhardcode
 					enable_dev_signer: false,
 					overrides,
-					pending_create_inherent_data_providers: |_, ()| async move { Ok(()) },
+					pending_create_inherent_data_providers: |_, ()| async move {
+						Ok(ethereum_relay_inherent())
+					},
 				},
 				backend: backend.clone(),
 			};
