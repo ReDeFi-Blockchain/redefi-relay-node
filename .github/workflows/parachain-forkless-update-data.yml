@@ -1,5 +1,5 @@
 
-name: Relay-Node-Only
+name: Parachain-Forkless-Update-Data
 on:
   pull_request:
     branches: [ 'develop' ]
@@ -33,8 +33,8 @@ jobs:
 
   build:
     needs: [envs]
-    name: Trigger running relay node only workflow
-    uses: ReDeFi-Blockchain/redefi-infra/.github/workflows/relay-node-only-update.yml@main
+    name: Trigger running Parachain-Forkless-Update-Data workflow
+    uses: ReDeFi-Blockchain/redefi-infra/.github/workflows/parachain-forkless-update-data.yml@main
     secrets: inherit
     with:
       relay-node-version: ${{ github.ref }}
